@@ -26,6 +26,8 @@ class CheckCategory(Enum):
     CPU = "cpu"
     NETWORK = "network"
     CLOCK = "clock"
+    HARDWARE = "hardware"
+    PROCESS = "process"
 
 
 @dataclass(frozen=True)
