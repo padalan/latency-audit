@@ -5,7 +5,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
-[![CI](https://github.com/nikhilpadala/latency-audit/actions/workflows/test.yml/badge.svg)](https://github.com/nikhilpadala/latency-audit/actions)
+[![CI](https://github.com/nikhilpadala/latency-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/nikhilpadala/latency-audit/actions)
+[![Codecov](https://codecov.io/gh/nikhilpadala/latency-audit/branch/main/graph/badge.svg)](https://codecov.io/gh/nikhilpadala/latency-audit)
 
 **The HFT Validator.**
 A ruthless CLI tool that audits Linux infrastructure against Tier 1 High-Frequency Trading standards.
