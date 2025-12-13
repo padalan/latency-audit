@@ -1,19 +1,19 @@
-# ⚡ latency-audit
+# latency-audit
 
 [![PyPI version](https://img.shields.io/pypi/v/latency-audit.svg)](https://pypi.org/project/latency-audit/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/latency-audit.svg)](https://pypi.org/project/latency-audit/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
-[![CI](https://github.com/nikhilpadala/latency-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/nikhilpadala/latency-audit/actions)
-[![Codecov](https://codecov.io/gh/nikhilpadala/latency-audit/branch/main/graph/badge.svg)](https://codecov.io/gh/nikhilpadala/latency-audit)
+[![CI](https://github.com/padalan/latency-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/padalan/latency-audit/actions)
+[![Codecov](https://codecov.io/gh/padalan/latency-audit/branch/main/graph/badge.svg)](https://codecov.io/gh/padalan/latency-audit)
 
 **The HFT Validator.**
 A ruthless CLI tool that audits Linux infrastructure against Tier 1 High-Frequency Trading standards.
 
 ---
 
-## 🚨 The Problem
+## The Problem
 
 Default Linux kernels are tuned for **throughput** (web servers), not **latency** (trading).
 
@@ -31,7 +31,7 @@ A single misconfigured setting can cost you:
 
 ---
 
-## 🛠 What It Checks
+## What It Checks
 
 ### Kernel
 - [x] Swappiness (should be 0)
@@ -55,7 +55,7 @@ A single misconfigured setting can cost you:
 
 ---
 
-## 📦 Installation
+## Installation
 
 ```bash
 pip install latency-audit
@@ -64,12 +64,12 @@ pip install latency-audit
 Or install from source for the latest:
 
 ```bash
-pip install git+https://github.com/nikhilpadala/latency-audit.git
+pip install git+https://github.com/padalan/latency-audit.git
 ```
 
 ---
 
-## ⚡ Usage
+## Usage
 
 ### Quick Audit (Read-Only)
 
@@ -80,20 +80,20 @@ latency-audit
 Example output:
 
 ```
-⚡ latency-audit v0.1.0
+latency-audit v0.1.2
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃                           KERNEL CONFIGURATION                            ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-  ✅ swappiness = 0
-  ❌ transparent_hugepages = always (should be: never)
-  ✅ kernel.sched_min_granularity_ns = 100000
+  [PASS] swappiness = 0
+  [FAIL] transparent_hugepages = always (should be: never)
+  [PASS] kernel.sched_min_granularity_ns = 100000
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃                            CPU CONFIGURATION                              ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-  ✅ governor = performance (all cores)
-  ❌ C-States enabled (max_cstate = 9, should be: 0)
+  [PASS] governor = performance (all cores)
+  [FAIL] C-States enabled (max_cstate = 9, should be: 0)
 ```
 
 ### JSON Output (for CI/CD)
@@ -122,25 +122,25 @@ latency-audit --category network
 
 ---
 
-## 🔒 Security
+## Security
 
 This tool is **read-only by design**. It:
 
-- ✅ Reads `/proc` and `/sys` filesystem
-- ✅ Reads `sysctl` values
-- ✅ Inspects NIC settings via `ethtool`
-- ❌ Never modifies any settings
-- ❌ Never requires root (though some checks are more complete with it)
+- Reads `/proc` and `/sys` filesystem
+- Reads `sysctl` values
+- Inspects NIC settings via `ethtool`
+- Never modifies any settings
+- Never requires root (though some checks are more complete with it)
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ```bash
 # Clone and install dev dependencies
-git clone https://github.com/nikhilpadala/latency-audit.git
+git clone https://github.com/padalan/latency-audit.git
 cd latency-audit
 pip install -e ".[dev]"
 
@@ -153,7 +153,7 @@ pytest
 
 ---
 
-## 📈 Roadmap
+## Roadmap
 
 - [ ] `--fix` mode with guided remediation
 - [ ] Benchmark mode (measure actual latency)
@@ -163,7 +163,7 @@ pytest
 
 ---
 
-## 📄 License
+## License
 
 MIT © [Nikhil Padala](https://nikhilpadala.com)
 

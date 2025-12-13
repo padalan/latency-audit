@@ -13,7 +13,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "latency-audit"
-version = "0.1.2"
+version = "0.1.3"
 description = "HFT-grade Linux infrastructure validator. Audits kernel, CPU, network, and clock settings against trading latency best practices."
 readme = "README.md"
 authors = [{ name = "Nikhil Padala", email = "contact@nikhilpadala.com" }]
