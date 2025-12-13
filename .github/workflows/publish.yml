@@ -1,0 +1,109 @@
+# =============================================================================
+# PUBLISH WORKFLOW: Build & Upload to PyPI
+# =============================================================================
+# Triggered when you create a GitHub Release.
+#
+# HOW TO USE:
+# 1. Update version in src/latency_audit/__init__.py and pyproject.toml
+# 2. Commit: git commit -m "chore: bump version to 0.2.0"
+# 3. Tag: git tag v0.2.0
+# 4. Push: git push && git push --tags
+# 5. Create Release on GitHub (or use `gh release create v0.2.0`)
+# 6. This workflow runs automatically and publishes to PyPI
+#
+# SECRETS REQUIRED:
+# - PYPI_API_TOKEN: Your PyPI API token (set in repo Settings → Secrets)
+#   Get it from: https://pypi.org/manage/account/token/
+# =============================================================================
+
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+# Restrict permissions for security
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # BUILD
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build Distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build tools
+        run: pip install build
+
+      - name: Build package
+        run: python -m build
+
+      - name: Store build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  # ---------------------------------------------------------------------------
+  # PUBLISH TO PYPI
+  # ---------------------------------------------------------------------------
+  publish-pypi:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+
+    # Trusted Publishing (recommended by PyPI)
+    # See: https://docs.pypi.org/trusted-publishers/
+    environment:
+      name: pypi
+      url: https://pypi.org/project/latency-audit/
+
+    permissions:
+      id-token: write  # Required for trusted publishing
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # No token needed with trusted publishing!
+        # Alternative: use PYPI_API_TOKEN secret
+        # with:
+        #   password: ${{ secrets.PYPI_API_TOKEN }}
+
+  # ---------------------------------------------------------------------------
+  # PUBLISH TO TEST PYPI (Optional - for testing releases)
+  # ---------------------------------------------------------------------------
+  # Uncomment this job if you want to test releases first
+  # publish-testpypi:
+  #   name: Publish to TestPyPI
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   environment:
+  #     name: testpypi
+  #     url: https://test.pypi.org/project/latency-audit/
+  #   permissions:
+  #     id-token: write
+  #   steps:
+  #     - name: Download build artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: python-package-distributions
+  #         path: dist/
+  #     - name: Publish to TestPyPI
+  #       uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         repository-url: https://test.pypi.org/legacy/

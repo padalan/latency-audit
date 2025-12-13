@@ -1,0 +1,153 @@
+# =============================================================================
+# BUILD SYSTEM
+# =============================================================================
+# Hatchling is modern, fast, and requires minimal config.
+# Alternatives: setuptools, flit, poetry-core
+# Why Hatchling? Zero config for src/ layout, maintained by PyPA.
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# =============================================================================
+# PROJECT METADATA (PEP 621)
+# =============================================================================
+# This is what PyPI displays and what pip uses.
+
+[project]
+name = "latency-audit"
+version = "0.1.0"
+description = "HFT-grade Linux infrastructure validator."
+readme = "README.md"
+authors = [{ name = "Nikhil Padala", email = "contact@nikhilpadala.com" }]
+license = { text = "MIT" }
+requires-python = ">=3.10"
+keywords = ["hft", "latency", "linux", "trading", "audit", "performance"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Systems Administration",
+    "Topic :: System :: Benchmark",
+    "Typing :: Typed",
+]
+
+# -----------------------------------------------------------------------------
+# Dependencies
+# -----------------------------------------------------------------------------
+# Pin minimum versions, not exact versions. Let users resolve conflicts.
+# click: CLI framework (used by Flask, Black, etc.)
+# rich: Beautiful terminal output (tables, colors, progress bars)
+
+dependencies = [
+    "click>=8.0",
+    "rich>=13.0",
+]
+
+# -----------------------------------------------------------------------------
+# Optional Dependencies (installed with pip install latency-audit[dev])
+# -----------------------------------------------------------------------------
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "mypy>=1.0",
+    "pre-commit>=3.0",
+]
+
+# -----------------------------------------------------------------------------
+# CLI Entry Point
+# -----------------------------------------------------------------------------
+# This creates the `latency-audit` command that calls main() in cli.py
+
+[project.scripts]
+latency-audit = "latency_audit.cli:main"
+
+# -----------------------------------------------------------------------------
+# Project URLs (shown on PyPI sidebar)
+# -----------------------------------------------------------------------------
+
+[project.urls]
+Homepage = "https://github.com/nikhilpadala/latency-audit"
+Documentation = "https://github.com/nikhilpadala/latency-audit#readme"
+Repository = "https://github.com/nikhilpadala/latency-audit.git"
+Issues = "https://github.com/nikhilpadala/latency-audit/issues"
+Changelog = "https://github.com/nikhilpadala/latency-audit/blob/main/CHANGELOG.md"
+
+# =============================================================================
+# RUFF - The One Linter to Rule Them All
+# =============================================================================
+# Ruff replaces: flake8, isort, pyupgrade, autoflake, and more.
+# It's written in Rust and is 10-100x faster than the tools it replaces.
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort (import sorting)
+    "B",      # flake8-bugbear (common bugs)
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade (modern Python syntax)
+    "SIM",    # flake8-simplify
+    "TCH",    # flake8-type-checking (optimize imports)
+    "PTH",    # flake8-use-pathlib (prefer pathlib over os.path)
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["latency_audit"]
+
+# =============================================================================
+# MYPY - Static Type Checking
+# =============================================================================
+# Catch type errors before runtime. Essential for reliability.
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+# =============================================================================
+# PYTEST - Testing Configuration
+# =============================================================================
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = [
+    "-ra",           # Show extra test summary info
+    "-q",            # Quiet mode
+    "--strict-markers",
+]
+
+# =============================================================================
+# COVERAGE - Code Coverage Configuration
+# =============================================================================
+
+[tool.coverage.run]
+source = ["src/latency_audit"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]

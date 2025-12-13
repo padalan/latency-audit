@@ -1,0 +1,87 @@
+# =============================================================================
+# PRE-COMMIT HOOKS CONFIGURATION
+# =============================================================================
+# These hooks run automatically before every commit.
+# If a hook fails, the commit is rejected.
+# Many hooks auto-fix issues — just `git add` and commit again.
+#
+# Installation:
+#   pip install pre-commit
+#   pre-commit install
+#
+# Manual run (useful for CI):
+#   pre-commit run --all-files
+# =============================================================================
+
+repos:
+  # ---------------------------------------------------------------------------
+  # RUFF: The One Linter to Rule Them All
+  # ---------------------------------------------------------------------------
+  # Ruff is 10-100x faster than flake8, isort, black combined.
+  # Written in Rust. Replaces: flake8, isort, pyupgrade, autoflake, black
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.3  # Latest stable as of Dec 2024
+    hooks:
+      # Linting: catches bugs, style issues, import order
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      # Formatting: like Black, but faster
+      - id: ruff-format
+
+  # ---------------------------------------------------------------------------
+  # GENERAL HYGIENE HOOKS
+  # ---------------------------------------------------------------------------
+  # Small, fast checks that catch common mistakes
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      # Remove trailing whitespace (except in markdown where it matters)
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      # Ensure files end with a newline (POSIX standard)
+      - id: end-of-file-fixer
+      # Validate YAML files (catches syntax errors before CI)
+      - id: check-yaml
+      # Validate TOML files (catches pyproject.toml errors)
+      - id: check-toml
+      # Prevent commits to main/master branch
+      - id: no-commit-to-branch
+        args: [--branch, main, --branch, master]
+      # Check for files that would conflict on case-insensitive filesystems
+      - id: check-case-conflict
+      # Ensure executables have shebangs
+      - id: check-executables-have-shebangs
+      # Check for merge conflict markers
+      - id: check-merge-conflict
+      # Detect private keys accidentally committed
+      - id: detect-private-key
+
+  # ---------------------------------------------------------------------------
+  # PYTHON-SPECIFIC CHECKS
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      # Check for Python syntax errors
+      - id: check-ast
+      # Ensure requirements.txt files are sorted (if you have any)
+      - id: requirements-txt-fixer
+      # Check for debugger imports (pdb, ipdb, etc.)
+      - id: debug-statements
+
+  # ---------------------------------------------------------------------------
+  # TYPOS: Catch spelling mistakes in code
+  # ---------------------------------------------------------------------------
+  # Fast spell checker written in Rust
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.28.3
+    hooks:
+      - id: typos
+
+# =============================================================================
+# CI CONFIGURATION
+# =============================================================================
+# This tells pre-commit how to behave in CI environments
+ci:
+  autofix_commit_msg: "style: auto-fix by pre-commit hooks"
+  autoupdate_commit_msg: "chore: update pre-commit hooks"

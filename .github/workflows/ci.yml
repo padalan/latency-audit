@@ -1,0 +1,129 @@
+# =============================================================================
+# CI WORKFLOW: Test, Lint, Type Check
+# =============================================================================
+# Runs on every push and pull request.
+# This is your automated quality gate — if it fails, the PR gets a red X.
+#
+# Matrix strategy: Tests across multiple Python versions to ensure compatibility.
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+# Cancel in-progress runs when a new commit is pushed
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # LINTING & FORMATTING CHECK
+  # ---------------------------------------------------------------------------
+  # Fast check that runs first — fails quickly if code style is wrong
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Run Ruff Linter
+        run: ruff check src/ tests/
+
+      - name: Run Ruff Formatter Check
+        run: ruff format --check src/ tests/
+
+  # ---------------------------------------------------------------------------
+  # TYPE CHECKING
+  # ---------------------------------------------------------------------------
+  # Catches type errors before runtime
+  type-check:
+    name: Type Check (MyPy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install .
+          pip install mypy
+
+      - name: Run MyPy
+        run: mypy src/
+
+  # ---------------------------------------------------------------------------
+  # TESTS
+  # ---------------------------------------------------------------------------
+  # Matrix: Tests on Python 3.10, 3.11, 3.12
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false  # Don't cancel other versions if one fails
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install .
+          pip install pytest pytest-cov
+
+      - name: Run Tests with Coverage
+        run: pytest --cov=src/latency_audit --cov-report=xml
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false  # Don't fail if codecov is down
+
+  # ---------------------------------------------------------------------------
+  # BUILD CHECK
+  # ---------------------------------------------------------------------------
+  # Verifies the package can be built (catches packaging errors)
+  build:
+    name: Build Package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build tools
+        run: pip install build
+
+      - name: Build package
+        run: python -m build
+
+      - name: Check package with twine
+        run: |
+          pip install twine
+          twine check dist/*
