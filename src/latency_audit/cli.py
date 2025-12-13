@@ -27,10 +27,10 @@ from latency_audit.runner import run_audit
 )
 def main(output_json: bool, category: tuple[str, ...]) -> None:
     """
-    🔬 latency-audit: HFT-grade Linux infrastructure validator.
+    latency-audit: HFT-grade Linux infrastructure validator.
 
     Audits your Linux system against Tier 1 High-Frequency Trading
-    latency standards. Read-only by default.
+    latency standards. Read-only, non-invasive.
     """
     console = Console()
 

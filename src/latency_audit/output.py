@@ -17,19 +17,19 @@ from latency_audit.models import CheckCategory, CheckStatus
 if TYPE_CHECKING:
     from latency_audit.models import AuditReport, CheckResult
 
-# Status icons and colors
+# Status indicators and colors
 STATUS_ICONS: dict[CheckStatus, tuple[str, str]] = {
-    CheckStatus.PASS: ("✅", "green"),
-    CheckStatus.FAIL: ("❌", "red"),
-    CheckStatus.WARN: ("⚠️", "yellow"),
-    CheckStatus.SKIP: ("⏭️", "dim"),
+    CheckStatus.PASS: ("[PASS]", "green"),
+    CheckStatus.FAIL: ("[FAIL]", "red"),
+    CheckStatus.WARN: ("[WARN]", "yellow"),
+    CheckStatus.SKIP: ("[SKIP]", "dim"),
 }
 
 CATEGORY_TITLES: dict[CheckCategory, str] = {
-    CheckCategory.KERNEL: "🐧 KERNEL CONFIGURATION",
-    CheckCategory.CPU: "⚡ CPU CONFIGURATION",
-    CheckCategory.NETWORK: "🌐 NETWORK CONFIGURATION",
-    CheckCategory.CLOCK: "🕐 CLOCK CONFIGURATION",
+    CheckCategory.KERNEL: "KERNEL CONFIGURATION",
+    CheckCategory.CPU: "CPU CONFIGURATION",
+    CheckCategory.NETWORK: "NETWORK CONFIGURATION",
+    CheckCategory.CLOCK: "CLOCK CONFIGURATION",
 }
 
 
@@ -38,7 +38,7 @@ def print_header(console: Console, version: str) -> None:
     console.print()
     console.print(
         Panel.fit(
-            f"[bold cyan]⚡ latency-audit[/bold cyan] [dim]v{version}[/dim]\n"
+            f"[bold cyan]latency-audit[/bold cyan] [dim]v{version}[/dim]\n"
             "[dim]HFT-grade Linux infrastructure validator[/dim]",
             border_style="cyan",
         )
@@ -84,7 +84,7 @@ def print_category(
 
 def print_summary(console: Console, report: "AuditReport") -> None:
     """Print the summary table."""
-    table = Table(title="📊 Audit Summary", expand=True, show_header=False)
+    table = Table(title="Audit Summary", expand=True, show_header=False)
     table.add_column("Metric", style="bold")
     table.add_column("Value", justify="right")
 
