@@ -48,6 +48,16 @@ A single misconfigured setting can cost you:
 - [x] NIC Offloads (GRO/LRO/TSO should be OFF for latency-critical paths)
 - [x] IRQ affinity
 - [x] Ring buffer sizes
+- [x] **UDP socket buffer drops** (RcvbufErrors)
+- [x] **NIC hardware discards** (rx_missed_errors)
+
+### Hardware
+- [x] **PCIe Link Width & Speed** (validates NICs negotiated at max speed)
+- [x] **Memory Channel Balance** (detects asymmetric DIMM population)
+
+### Process
+- [x] **Involuntary Context Switches** (scheduler preemption)
+- [x] **Major Page Faults** (disk I/O detection)
 
 ### Clock
 - [x] TSC reliability (`constant_tsc`, `nonstop_tsc`)
@@ -80,7 +90,7 @@ latency-audit
 Example output:
 
 ```
-latency-audit v0.1.2
+latency-audit v0.1.3
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃                           KERNEL CONFIGURATION                            ┃
@@ -115,9 +125,21 @@ latency-audit --json
 ### Check Specific Categories
 
 ```bash
+# System-level checks
 latency-audit --category kernel
 latency-audit --category cpu
 latency-audit --category network
+latency-audit --category hardware
+
+# Process-specific checks (requires --pid)
+latency-audit --category process --pid 1234
+```
+
+### Monitor a Running Process
+
+```bash
+# Check if your trading application has any scheduler preemptions or disk I/O
+latency-audit --category process --pid $(pgrep trading_app)
 ```
 
 ---

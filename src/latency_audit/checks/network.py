@@ -283,8 +283,167 @@ def check_irq_affinity() -> CheckResult:
     )
 
 
+def check_udp_buffer_drops() -> CheckResult:
+    """
+    Check UDP socket buffer drops (RcvbufErrors).
+
+    For HFT: This indicates packets the kernel received but the application
+    couldn't read fast enough. The socket buffer overflowed.
+    """
+    snmp_content = _read_sysfs("/proc/net/snmp")
+    if snmp_content is None:
+        return CheckResult(
+            name="udp_buffer_drops",
+            category=CheckCategory.NETWORK,
+            status=CheckStatus.SKIP,
+            current_value="unknown",
+            expected_value="0 drops",
+            description="Could not read /proc/net/snmp",
+        )
+
+    # Parse UDP line from /proc/net/snmp
+    # Format has header line then values line:
+    # Udp: InDatagrams NoPorts InErrors OutDatagrams RcvbufErrors SndbufErrors ...
+    # Udp: 12345 0 0 6789 0 0 ...
+    udp_header = None
+    udp_values = None
+    for line in snmp_content.splitlines():
+        if line.startswith("Udp:"):
+            if udp_header is None:
+                udp_header = line.split()
+            else:
+                udp_values = line.split()
+                break
+
+    if udp_header is None or udp_values is None:
+        return CheckResult(
+            name="udp_buffer_drops",
+            category=CheckCategory.NETWORK,
+            status=CheckStatus.SKIP,
+            current_value="unknown",
+            expected_value="0 drops",
+            description="Could not parse UDP stats from /proc/net/snmp",
+        )
+
+    # Find RcvbufErrors column
+    try:
+        rcvbuf_idx = udp_header.index("RcvbufErrors")
+        rcvbuf_errors = int(udp_values[rcvbuf_idx])
+    except (ValueError, IndexError):
+        return CheckResult(
+            name="udp_buffer_drops",
+            category=CheckCategory.NETWORK,
+            status=CheckStatus.SKIP,
+            current_value="unknown",
+            expected_value="0 drops",
+            description="RcvbufErrors not found in /proc/net/snmp",
+        )
+
+    if rcvbuf_errors == 0:
+        status = CheckStatus.PASS
+        current = "0 drops"
+        latency_impact = None
+    else:
+        status = CheckStatus.FAIL
+        current = f"{rcvbuf_errors} drops"
+        latency_impact = "Packets lost - app too slow to drain socket"
+
+    return CheckResult(
+        name="udp_buffer_drops",
+        category=CheckCategory.NETWORK,
+        status=status,
+        current_value=current,
+        expected_value="0 drops",
+        latency_impact=latency_impact,
+        description="UDP socket buffer overflow drops",
+        fix_hint="Increase SO_RCVBUF or optimize receive loop"
+        if status != CheckStatus.PASS
+        else None,
+    )
+
+
+def check_nic_hardware_drops() -> list[CheckResult]:
+    """
+    Check NIC hardware discard counters.
+
+    For HFT: These indicate the NIC ran out of buffer space before
+    the kernel could process packets. Often caused by PCIe congestion
+    or CPU not keeping up with interrupt handling.
+    """
+    interfaces = _get_interfaces()
+    if not interfaces:
+        return [
+            CheckResult(
+                name="nic_hardware_drops",
+                category=CheckCategory.NETWORK,
+                status=CheckStatus.SKIP,
+                current_value="unknown",
+                expected_value="0 drops",
+                description="Could not enumerate network interfaces",
+            )
+        ]
+
+    results = []
+    for iface in interfaces[:3]:  # Limit to first 3 interfaces
+        stats_path = f"/sys/class/net/{iface}/statistics"
+
+        rx_missed = _read_sysfs(f"{stats_path}/rx_missed_errors")
+        rx_over = _read_sysfs(f"{stats_path}/rx_over_errors")
+
+        if rx_missed is None and rx_over is None:
+            continue
+
+        try:
+            missed = int(rx_missed) if rx_missed else 0
+            over = int(rx_over) if rx_over else 0
+            total_drops = missed + over
+        except ValueError:
+            continue
+
+        if total_drops == 0:
+            status = CheckStatus.PASS
+            current = "0 hardware drops"
+            latency_impact = None
+        else:
+            status = CheckStatus.WARN
+            current = f"{total_drops} drops (missed={missed}, over={over})"
+            latency_impact = "Packets dropped at NIC level - check PCIe/CPU load"
+
+        results.append(
+            CheckResult(
+                name=f"nic_hardware_drops ({iface})",
+                category=CheckCategory.NETWORK,
+                status=status,
+                current_value=current,
+                expected_value="0 drops",
+                latency_impact=latency_impact,
+                description=f"NIC hardware discard counters for {iface}",
+                fix_hint="Check PCIe link, increase ring buffers, verify CPU affinity"
+                if status != CheckStatus.PASS
+                else None,
+            )
+        )
+
+    return (
+        results
+        if results
+        else [
+            CheckResult(
+                name="nic_hardware_drops",
+                category=CheckCategory.NETWORK,
+                status=CheckStatus.SKIP,
+                current_value="unknown",
+                expected_value="0 drops",
+                description="Could not read NIC hardware drop counters",
+            )
+        ]
+    )
+
+
 def register_network_checks() -> None:
     """Register all network checks with the runner."""
     runner.register_check(check_nic_offloads)
     runner.register_check(check_ring_buffers)
     runner.register_check(check_irq_affinity)
+    runner.register_check(check_udp_buffer_drops)
+    runner.register_check(check_nic_hardware_drops)
